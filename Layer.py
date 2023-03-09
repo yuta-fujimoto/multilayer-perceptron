@@ -1,9 +1,10 @@
 import numpy as np
+import math
 
 class Dense:
     def __init__(self, n_input, n_output, acitivation) -> None:
         self.acitivation = acitivation
-        self.W = np.random.randn(n_output, n_input) * 0.01
+        self.W = np.random.randn(n_output, n_input) * math.sqrt(2./n_input)
         self.b = np.zeros((n_output, 1))
         self.A = None # (output_shape, n_samples)
         self.A_prev = None # (input_shape, n_samples)
@@ -13,7 +14,7 @@ class Dense:
         self.leaning_rate = leaning_rate
 
     def forward(self, A_prev):
-        Z = np.matmul(self.W, A_prev) + self.b
+        Z = np.dot(self.W, A_prev) + self.b
         A = self.acitivation.forward(Z)
 
         self.A = A
@@ -23,10 +24,9 @@ class Dense:
         return A
 
     def backwardOutputLayer(self, Y, n_samples):
-        dZ = -1. * self.acitivation.backward(self.Z) * \
-                np.sum(Y / self.A, axis=1, keepdims=True)
+        dZ = -1. * (Y - self.A)
 
-        dW = np.matmul(dZ, self.A_prev.T) / n_samples
+        dW = np.dot(dZ, self.A_prev.T) / n_samples
         db = np.sum(dZ, axis=1, keepdims=True) / n_samples
         W = np.copy(self.W)
 
@@ -36,9 +36,9 @@ class Dense:
         return W, dZ
 
     def backwardHiddenLayer(self, WNext, dZNext, n_samples):
-        dZ = np.matmul(WNext.T, dZNext) * self.acitivation.backward(self.Z)
+        dZ = np.dot(WNext.T, dZNext) * self.acitivation.backward(self.Z)
 
-        dW = np.matmul(dZ, self.A_prev.T) / n_samples
+        dW = np.dot(dZ, self.A_prev.T) / n_samples
         db = np.sum(dZ, axis=1, keepdims=True) / n_samples
         W = np.copy(self.W)
 
@@ -48,20 +48,6 @@ class Dense:
         # for debug
         # self.dW = dW
         return W, dZ
-
-    # debug functions
-    def forwardForGradApprox(self, A_prev, plus):
-        EPS = np.zeros(self.W.shape)
-        EPS[0, 0] = self.epsilon
-        if plus:
-            WPlus = self.W + EPS
-        else:
-            WPlus = self.W - EPS
-
-        Z = np.matmul(WPlus, A_prev) + self.b
-        A = self.acitivation.forward(Z)
-
-        return A
 
 class Relu:
     def __init__(self) -> None:
@@ -78,8 +64,8 @@ class Softmax:
         pass
 
     def forward(Z):
-        Z = Z - np.max(Z, axis=0)
-        return np.exp(Z) / np.sum(np.exp(Z), axis=0, keepdims=True)
+        Z_minus = Z - np.max(Z)
+        return np.exp(Z_minus) / np.sum(np.exp(Z_minus), axis=0, keepdims=True)
 
     def backward(Z):
         return Z * (1. - Z)
