@@ -1,0 +1,12 @@
+*
+
+!*/
+!.gitignore
+!requirement.txt
+
+# python
+!*.py
+!*.ipynb
+
+# dataset 
+!*.csv
