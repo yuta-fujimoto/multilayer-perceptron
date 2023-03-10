@@ -36,7 +36,8 @@ def plot_history(history):
 	axes[1][1].axis('off')
 
 	plt.tight_layout()
-	fig.savefig('history.png')
+	# fig.savefig('history.png')
+	plt.show()
 
 if __name__ == '__main__':
 	np.random.seed(42)

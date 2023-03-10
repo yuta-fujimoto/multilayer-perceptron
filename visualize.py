@@ -41,4 +41,5 @@ if __name__ == '__main__':
 
     fig.legend(loc='lower right')
     plt.tight_layout()
-    fig.savefig('visualize.png')
+    # fig.savefig('visualize.png')
+    plt.show()
