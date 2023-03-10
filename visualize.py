@@ -1,4 +1,3 @@
-import joblib
 import matplotlib.pyplot as  plt
 import argparse
 import json
@@ -42,4 +41,4 @@ if __name__ == '__main__':
 
     fig.legend(loc='lower right')
     plt.tight_layout()
-    fig.savefig('compare.png')
+    fig.savefig('visualize.png')
