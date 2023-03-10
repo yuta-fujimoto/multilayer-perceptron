@@ -2,8 +2,7 @@ import numpy as np
 import copy
 
 class EarlyStopping:
-	def __init__(self, on, patience = 5) -> None:
-		self.on = on
+	def __init__(self, patience = 5) -> None:
 		self.min_val_loss = float('inf')
 		self.layers = None
 
@@ -11,7 +10,7 @@ class EarlyStopping:
 		self.count = 0
 
 	def check(self, val_loss = None, layers = None):
-		if self.on == False:
+		if self.patience == None:
 			return False
 		if self.min_val_loss > val_loss:
 			self.min_val_loss = val_loss

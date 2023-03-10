@@ -43,6 +43,9 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--filepath', default='data.csv', help='data filepath(csv)')
 	parser.add_argument('--out', dest='out', type=str, default=None, help='output json name')
+	parser.add_argument('--epoch', dest='epoch', type=int, default=100, help='number of epochs')
+	parser.add_argument('--lr', dest='lr', type=float, default=0.01, help='learning rate')
+	parser.add_argument('--early_stopping', dest='es', type=int, default=None, help='patience of early_stopping')
 	args = parser.parse_args()
 
 	df = pd.read_csv(args.filepath)
@@ -63,16 +66,16 @@ if __name__ == '__main__':
 
 	n_layers = X.shape[1]
 
+	# create model
 	model = Sequence([
 		layer.Dense(n_layers, 30, layer.Relu),
 		layer.Dense(30, 30, layer.Relu),
 		layer.Dense(30, 2, layer.Softmax),
 	])
-
 	model.compile(loss='binaryCrossEntropy')
 
-	# debug
-	history = model.fit(X, Y, epoch=1000, learning_rate=0.1, early_stopping=True)
+	# train model
+	history = model.fit(X, Y, epoch=args.epoch, learning_rate=args.lr, early_stopping=args.es)
 
 	# save model and encoder
 	joblib.dump(model, 'params/model.joblib')

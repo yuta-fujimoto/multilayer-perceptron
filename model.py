@@ -7,19 +7,10 @@ class Sequence:
 		self.layers = layers
 		self.loss = ''
 
-		# save just weight(exclude bias)
-		self.debugCache = {
-			'approx': np.array([]),
-			'backprop': np.array([]),
-		}
-
-	def __forward(self, X, debugParams = None):
+	def __forward(self, X):
 		input = X
-		for i, l in enumerate(self.layers):
-			if debugParams is not None and i == debugParams['index']:
-				output = l.forwardForGradApprox(input, debugParams['plus'])
-			else:
-				output = l.forward(input)
+		for l in self.layers:
+			output = l.forward(input)
 			input = output
 
 		return output
@@ -29,10 +20,10 @@ class Sequence:
 		W, dZ = self.layers[l - 1].backwardOutputLayer(Y, n_sampels)
 		for i in reversed(range(l - 1)):
 			W, dZ = self.layers[i].backwardHiddenLayer(W, dZ, n_sampels)
-			# self.debugCache['backprop'] = np.append(dW, self.debugCache['backprop'])
 
 	def __loss(self, output, Y, n_samples):
 		if self.loss == 'binaryCrossEntropy':
+			# avoid log(0)
 			return -1. * ((Y * np.log(output + 1e-8)).sum() / n_samples)
 		else:
 			print('Model.Sequence: unknown loss')
@@ -46,11 +37,11 @@ class Sequence:
 	def compile(self, loss):
 		self.loss = loss
 
-	def fit(self, X, Y, learning_rate = 0.01, epoch = 10, early_stopping = False):
+	def fit(self, X, Y, learning_rate = 0.01, epoch = 10, early_stopping = None):
 		# X:  (n_samples, n_features)
 		# Y:  (n_samples, 1)
 
-		checker = EarlyStopping(early_stopping, patience=epoch // 10)
+		checker = EarlyStopping(early_stopping)
 
 		for l in self.layers:
 			l.set_params(learning_rate)
@@ -74,15 +65,6 @@ class Sequence:
 			# for ease of calculation
 			train_x, train_y = train_x.T, train_y.T
 			valid_x, valid_y = valid_x.T, valid_y.T
-
-			# debug
-			# for j, l in enumerate(self.layers):
-			#     outputPlus = self.__forward(train_x, {'index': j, 'plus': True })
-			#     outputMinus = self.__forward(train_x, {'index': j, 'plus': False })
-			#     outputLossPlus = self.__loss(outputPlus, train_y, n_trains)
-			#     outputLossMinus = self.__loss(outputMinus, train_y, n_trains)
-			#     gradApprox = (-outputLossMinus + outputLossPlus) / 0.02
-				# self.debugCache['approx'] = np.append(self.debugCache['approx'], gradApprox)
 
 			self.__forward(train_x)
 			self.__backward(train_y, n_trains)
@@ -131,9 +113,9 @@ class Sequence:
 		X_norm = (X - self.mean) / self.std
 
 		# for ease of calculation
-		X_norm_T = X_norm.T
-		Y = Y.T
-		output = self.__forward(X_norm_T)
+		X_norm, Y = X_norm.T, Y.T
+
+		output = self.__forward(X_norm)
 		loss = self.__loss(output, Y, Y.shape[1])
 
 		return (loss)

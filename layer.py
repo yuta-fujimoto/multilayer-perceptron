@@ -47,8 +47,6 @@ class Dense:
 		self.W = self.W - self.leaning_rate * dW
 		self.b = self.b - self.leaning_rate * db
 
-		# for debug
-		# self.dW = dW
 		return W, dZ
 
 class Relu:
@@ -66,8 +64,9 @@ class Softmax:
 		pass
 
 	def forward(Z):
-		Z_minus = Z - np.max(Z)
-		return np.exp(Z_minus) / np.sum(np.exp(Z_minus), axis=0, keepdims=True)
+		# avoid inf overflow
+		expZ = np.exp(Z - np.max(Z, axis=0, keepdims=True))
+		return expZ / np.sum(expZ, axis=0, keepdims=True)
 
 	def backward(Z):
 		return Z * (1. - Z)

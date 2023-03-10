@@ -1,12 +1,16 @@
 import joblib
 import pandas as pd
+import argparse
 
 if __name__ == '__main__':
-	model = joblib.load('model.joblib')
-	oheDiagnosis = joblib.load('ohe.joblib')
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--filepath', dest='filepath',  default='data.csv', help='data filepath(csv)')
+	args = parser.parse_args()
 
-	df = pd.read_csv('data.csv')
+	model = joblib.load('params/model.joblib')
+	oheDiagnosis = joblib.load('params/ohe.joblib')
 
+	df = pd.read_csv(args.filepath)
 	attirbutes = ['Radius', 'Texture', 'Perimeter', 'Area', 'Smoothness',
 				'Compactness', 'Concavity', 'Concave Points', 'Symmetry', 'Fractal Dimension']
 
@@ -17,12 +21,8 @@ if __name__ == '__main__':
 		columns.append(f'Worst {s}')
 	df.columns = columns
 
-	# features = ['Worst Area', 'Worst Smoothness', 'Mean Texture']
-	# X = df[features].values
 	X = df.drop(columns=['ID', 'Diagnosis']).values
-
 	Y = oheDiagnosis.transform(df[['Diagnosis']]).toarray()
 
 	loss = model.evaluate(X, Y)
-
 	print('loss:', loss)
