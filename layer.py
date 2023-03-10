@@ -10,7 +10,6 @@ class Dense:
 		self.b = np.zeros((n_output, 1))
 		self.A = None # (output_shape, n_samples)
 		self.A_prev = None # (input_shape, n_samples)
-		self.epsilon = 0.01
 
 	def set_params(self, leaning_rate):
 		self.leaning_rate = leaning_rate
